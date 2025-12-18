@@ -1,2 +1,1 @@
-# Dartim
-Discord Musicbot written in Dart
+A simple command-line application.
