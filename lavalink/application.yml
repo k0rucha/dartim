@@ -1,0 +1,49 @@
+server: # REST and WS server
+  port: 2333
+  address: 0.0.0.0
+lavalink:
+  server:
+    password: "lavalinkpass"
+    sources:
+      youtube: true # YouTube再生を有効化
+      bandcamp: true
+      soundcloud: true
+      twitch: true
+      vimeo: true
+      http: true
+      local: true
+    filters: # All filters are enabled by default
+      volume: true
+      equalizer: true
+      karaoke: true
+      timescale: true
+      tremolo: true
+      vibrato: true
+      distortion: true
+      rotation: true
+      channelMix: true
+      lowPass: true
+    bufferDurationMs: 400 # The duration of the audio buffer. higher = less buffering, more latency.
+    frameBufferDurationMs: 5000 # How much of the buffer to effectively buffer
+    opusEncodingQuality: 10 # Opus encoder quality. Valid values: 0-10. 10 = best quality.
+    resamplingQuality: LOW # Quality of resampling operations. Valid values: LOW, MEDIUM, HIGH
+    trackStuckThresholdMs: 10000 # The threshold for how long a track can be stuck. A track is stuck if does not return any audio data.
+    useSeekGhosting: true # Seek ghosting is the effect where whilst a seek is in progress, the audio buffer is read from until empty, or until seek is ready.
+    youtubePlaylistLoadLimit: 6 # Number of pages to load for one playlist
+    playerUpdateInterval: 5 # How frequently to send player updates to clients, in seconds
+    youtubeSearchEnabled: true
+    soundcloudSearchEnabled: true
+    gc-warnings: true
+metrics:
+  prometheus:
+    enabled: false
+    endpoint: /metrics
+sentry:
+  dsn: ""
+  environment: ""
+logging:
+  file:
+    path: ./logs/
+  level:
+    root: INFO
+    lavalink: INFO
