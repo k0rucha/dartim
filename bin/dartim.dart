@@ -27,6 +27,8 @@ void main() async {
     password: "lavalinkpass",
   );
 
+  final Map<Snowflake, LavalinkPlayer> players = {};
+
   final pingCommand = ChatCommand('ping', 'BotがPong!と返します', (
     ChatContext context,
   ) async {
@@ -34,11 +36,6 @@ void main() async {
   });
 
   commands.addCommand(pingCommand);
-
-
-
-
-
 
   final summonCommand = ChatCommand('summon', 'ボットを音声チャンネルに参加させます', (
     ChatContext context,
@@ -51,7 +48,11 @@ void main() async {
     }
 
     final guild = await context.guild?.get();
-    final voiceState = guild?.voiceStates[member.id];
+    if (guild == null) {
+      context.respond(MessageBuilder(content: "サーバーでのみ有効なコマンドです"));
+      return;
+    }
+    final voiceState = guild.voiceStates[member.id];
 
     // voiceState.channel は PartialChannel（IDのみ）
     // .get() で Discord API から完全な Channel 情報を取得
@@ -69,18 +70,72 @@ void main() async {
     }
 
     // スマートキャストにより voiceChannel は GuildVoiceChannel 型として扱われる
-    await voiceChannel.connectLavalink();
+    final player = await voiceChannel.connectLavalink();
+    players[guild.id] = player;
+
     context.respond(MessageBuilder(content: "${voiceChannel.name} に参加しました！"));
   });
 
   commands.addCommand(summonCommand);
 
+  final leaveCommand = ChatCommand('leave', 'ボットを音声チャンネルから退出させます', (
+    ChatContext context,
+  ) async {
+    final guild = context.guild;
+    if (guild == null) {
+      // DMなどをはじくためのハンドリング
+      context.respond(MessageBuilder(content: "サーバー内のみ有効なコマンドです。"));
+      return;
+    }
+    final guildId = guild.id; // snowflake type
 
+    final fullGuild = await guild.get();
+    final botVoiceState = fullGuild.voiceStates[context.client.user.id];
 
+    if (botVoiceState == null || botVoiceState.channel == null) {
+      context.respond(MessageBuilder(content: "音声チャンネルにBotがいません!"));
+      return;
+    }
 
+    context.client.gateway.updateVoiceState(
+      guildId,
+      GatewayVoiceStateBuilder(
+        channelId: null,
+        isMuted: false,
+        isDeafened: false,
+      ),
+    );
+    context.respond(MessageBuilder(content: "退出しました!"));
+  });
+  commands.addCommand(leaveCommand);
 
+  final disconnectCommand = ChatCommand(
+    'disconnect',
+    'ボットを音声チャンネルから退出させます(leaveコマンドと同じことが起きますが、処理の仕方が違います。)',
+    (ChatContext context) async {
+      final guild = context.guild;
 
+      if (guild == null) {
+        context.respond(MessageBuilder(content: "サーバー内のみ有効なコマンドです。"));
+        return;
+      }
+      final guildId = guild.id;
 
+      final player = players[guildId];
+
+      if (player == null) {
+        context.respond(MessageBuilder(content: "音声チャンネルに参加していません!"));
+        return;
+      }
+
+      await player.disconnect();
+      players.remove(guildId);
+      context.respond(MessageBuilder(content: "退出しました！"));
+    },
+  );
+  commands.addCommand(disconnectCommand);
+
+  // if (voice
 
   // discord bot仕様のintentsを設定
   // GatewayIntentsにはたくさんの権限フラグが用意されている
