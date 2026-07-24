@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:math';
+
 import 'package:dotenv/dotenv.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
@@ -15,10 +18,24 @@ void main() async {
   if (botToken == null) {
     throw Exception(".envにDISCORD_TOKENが定義されていませんでした");
   }
+  final guildIdStr = env['GUILD_ID'];
+  if (guildIdStr == null){
+    throw Exception(".envにGUILD_IDが定義されていませんでした。");
+  }
+
+  // envからguildIdを取り出してint型にパースする
+  late final int guildId;
+
+  try {
+    guildId = int.parse(guildIdStr);
+  } catch (e) {
+    throw Exception("GUILD_IDに文字が入っています。数値のみです！");
+  }
+
 
   final commands = CommandsPlugin(
     prefix: null,
-    guild: Snowflake(868799385096572968),
+    guild: Snowflake(guildId),
     options: CommandsOptions(logErrors: true),
   );
 
