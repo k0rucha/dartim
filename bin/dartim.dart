@@ -6,15 +6,17 @@ import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:nyxx_lavalink/nyxx_lavalink.dart';
 
-void main() async {
-  print('Hello world!');
+class AppConfig {
+  // mainに.envを読み込む処理を書くと汚いので、AppConfigクラスを作って読み込み処理をまとめる。
+  // ファクトリコンストラクタを使う方法を使うとよいらしい。
+  // これらについては後で調べて使ってみる。
+}
 
-  // Load .env
+void main() async {
   var env = DotEnv(includePlatformEnvironment: true)..load();
 
   // envからdiscord tokenを取り出す
   final botToken = env['DISCORD_TOKEN'];
-  // botTokenの定義時エラーハンドリング
   if (botToken == null) {
     throw Exception(".envにDISCORD_TOKENが定義されていませんでした");
   }
